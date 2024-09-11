@@ -10,7 +10,7 @@ const port =  4000;
  
 //  middle ware 
 app.use(cors());
-app.use(express.json()) 
+app.use(express.json());
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = "mongodb+srv://rimanroni386:AB1SuIBQShR1EPG0@cluster0.s4q80.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
@@ -54,14 +54,38 @@ app.get("/services/:id",async (req, res)=>{
     const query = await servicesCollection.findOne(filter);
     res.send(query) 
  });
-
+ 
 
 //  post order data 
 app.post('/order', async(req, res)=>{
      const data =   req.body;
      const result = await ordersCollection.insertOne(data);
-     res.send(result)
+     res.send(result) 
 })
+
+// update order data by id 
+app.put('/order/:id', async(req, res)=>{
+  
+  const id = req.params.id; 
+   const filter = {_id: new ObjectId(id)};
+  const options = { upsert: true };
+  const updateData = {
+    $set: {
+       active : true        
+    }
+  }
+  const result = await ordersCollection.updateOne(filter, updateData, options);
+  res.send(result)
+})
+
+app.get('/order',async (req, res)=>{
+   let findData = {};
+   if(req.query?.email){
+    findData = {email: req.query.email};
+   }
+   const result = await ordersCollection.find(findData).toArray();
+   res.send(result)
+}) 
 // get order data
 app.get('/order',async (req, res)=>{
      const findData = ordersCollection.find();
@@ -69,15 +93,7 @@ app.get('/order',async (req, res)=>{
      res.send(result)
 })
 // get data by email 
- app.get('/order', async (req, res) => {
-  // console.log(req.query); 
-     let findData = {};
-     if (req.query?.email) {
-      findData = {email: req.query.email}
-    }
-      const result = await ordersCollection.find(findData).toArray();
-     res.send(result)
- });
+ 
 
 
  app.get('/product', async(req, res)=>{
